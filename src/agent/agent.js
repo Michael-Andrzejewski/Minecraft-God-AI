@@ -37,10 +37,16 @@ export class Agent {
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
             console.log(`${this.name} spawned.`);
+            
             this.coder.clear();
             
             const ignore_messages = [
-                "Set own game mode to"
+                "Set own game mode to",
+                "Set the time to",
+                "Set the difficulty to",
+                "Teleported ",
+                "Set the weather to",
+                "Gamerule "
             ];
             const eventname = settings.profiles.length > 1 ? 'whisper' : 'chat';
             this.bot.on(eventname, (username, message) => {
@@ -62,9 +68,6 @@ export class Agent {
                 bannedFood: ["rotten_flesh", "spider_eye", "poisonous_potato", "pufferfish", "chicken"]
             };
 
-            // Execute a Minecraft command when joining the server
-            this.executeMinecraftCommand('/summon minecraft:lightning_bolt ~ ~ ~');
-
             if (save_data && save_data.self_prompt) { // if we're loading memory and self-prompting was on, restart it, ignore init_message
                 let prompt = save_data.self_prompt;
                 // add initial message to history
@@ -84,15 +87,9 @@ export class Agent {
     }
 
     cleanChat(message) {
+        // newlines are interpreted as separate chats, which triggers spam filters. replace them with spaces
         message = message.replaceAll('\n', '  ');
-        this.bot.chat(message); // Print the entire message in the chat
-
-        // Extract and execute the command if present
-        const commandMatch = message.match(/\/\w+ .*/);
-        if (commandMatch) {
-            const command = commandMatch[0];
-            this.bot.chat(command); // Execute the command
-        }
+        return this.bot.chat(message);
     }
 
     shutUp() {
@@ -113,11 +110,7 @@ export class Agent {
         if (!self_prompt) {
             const user_command_name = containsCommand(message);
             if (user_command_name) {
-                if (user_command_name.startsWith('/')) {
-                    // Execute Minecraft command
-                    this.executeMinecraftCommand(user_command_name);
-                    return true;
-                } else if (!commandExists(user_command_name)) {
+                if (!commandExists(user_command_name)) {
                     this.bot.chat(`Command '${user_command_name}' does not exist.`);
                     return false;
                 }
@@ -173,7 +166,7 @@ export class Agent {
                     let chat_message = `*used ${command_name.substring(1)}*`;
                     if (pre_message.length > 0)
                         chat_message = `${pre_message}  ${chat_message}`;
-                    this.cleanChat(chat_message);
+                    this.cleanChat(res);
                 }
 
                 let execute_res = await executeCommand(this, res);
@@ -187,18 +180,9 @@ export class Agent {
                     break;
             }
             else { // conversation response
-                // Extract Minecraft commands using LLM
-                const minecraftCommands = await this.extractMinecraftCommandsLLM(res);
-                if (minecraftCommands.length > 0) {
-                    for (const command of minecraftCommands) {
-                        this.executeMinecraftCommand(command);
-                        this.history.add(this.name, `*executed ${command}*`);
-                    }
-                } else {
-                    this.history.add(this.name, res);
-                    this.cleanChat(res);
-                }
-                console.log('Response:', res);
+                this.history.add(this.name, res);
+                this.cleanChat(res);
+                console.log('Purely conversational response:', res);
                 break;
             }
             this.history.save();
@@ -206,31 +190,6 @@ export class Agent {
 
         this.bot.emit('finished_executing');
         return used_command;
-    }
-
-    executeMinecraftCommand(command) {
-        console.log(`Executing Minecraft command: ${command}`);
-        this.bot.chat(command);
-    }
-
-    async extractMinecraftCommandsLLM(message) {
-        const prompt = `Extract all valid Minecraft commands from the following message. Only return the commands, one per line:
-    
-    ${message}
-    
-    Commands:`;
-    
-        try {
-            const llmResponse = await this.prompter.promptLLM(prompt);
-            
-            // Ensure the response is a string and split it into lines
-            const commands = llmResponse.split('\n').filter(cmd => cmd.trim().startsWith('/'));
-            
-            return commands;
-        } catch (error) {
-            console.error('Error extracting Minecraft commands from LLM:', error);
-            return [];
-        }
     }
 
     startEvents() {
