@@ -60,7 +60,7 @@ export class Agent {
             ];
             const eventname = settings.profiles.length > 1 ? 'whisper' : 'chat';
             this.bot.on(eventname, (username, message) => {
-                if (username === this.bot.username) return; // Use bot.username instead of this.name
+                if (username === this.name) return;
                 
                 if (ignore_messages.some((m) => message.startsWith(m))) return;
 
@@ -264,7 +264,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             }
             else { // conversation response
                 this.history.add(this.name, res);
-                //this.cleanChat(res); //disabling this prevents the AI messages from being in the chat, so only AI commands are visible
+                this.cleanChat(res);
                 console.log('Purely conversational response:', res);
                 
                 // Use the new ExtractCommandLLM function for conversation responses
