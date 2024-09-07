@@ -8,9 +8,15 @@ import { NPCContoller } from './npc/controller.js';
 import { MemoryBank } from './memory_bank.js';
 import { SelfPrompter } from './self_prompter.js';
 import settings from '../../settings.js';
-
+import Anthropic from '@anthropic-ai/sdk';
 
 export class Agent {
+    constructor() {
+        this.client = new Anthropic({
+            apiKey: "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",
+        });
+    }
+
     async start(profile_fp, load_mem=false, init_message=null) {
         this.prompter = new Prompter(this, profile_fp);
         this.name = this.prompter.getName();
@@ -37,6 +43,10 @@ export class Agent {
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
             console.log(`${this.name} spawned.`);
+            
+            // Execute lightning bolt command
+            this.bot.chat('/summon minecraft:lightning_bolt');
+            console.log("Executed command: /summon minecraft:lightning_bolt");
             
             this.coder.clear();
             
@@ -96,6 +106,41 @@ export class Agent {
         this.shut_up = true;
         if (this.self_prompter.on) {
             this.self_prompter.stop(false);
+        }
+    }
+
+    async ExtractCommandLLM(message) {
+        const prompt = `
+        Extract only the valid Minecraft commands from the following message. 
+        Valid commands start with a '/' character.
+        Return the commands as a JSON array of strings.
+        If there are no valid commands, return an empty array.
+        
+        Message: "${message}"
+        `;
+
+        try {
+            const response = await this.client.messages.create({
+                model: "claude-3-5-sonnet-20240620",
+                max_tokens: 1000,
+                temperature: 0,
+                messages: [{ role: "user", content: prompt }],
+            });
+
+            const commandList = JSON.parse(response.content[0].text);
+            
+            if (Array.isArray(commandList)) {
+                for (const command of commandList) {
+                    if (typeof command === 'string' && command.startsWith('/')) {
+                        await this.bot.chat(command);
+                        console.log("Executed command:", command);
+                    }
+                }
+            } else {
+                console.warn('Invalid response format from LLM:', response.content[0].text);
+            }
+        } catch (error) {
+            console.error('Error in ExtractCommandLLM:', error);
         }
     }
 
@@ -183,6 +228,10 @@ export class Agent {
                 this.history.add(this.name, res);
                 this.cleanChat(res);
                 console.log('Purely conversational response:', res);
+                
+                // Use the new ExtractCommandLLM function for conversation responses
+                await this.ExtractCommandLLM(res);
+                
                 break;
             }
             this.history.save();

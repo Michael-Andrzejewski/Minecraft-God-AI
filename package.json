@@ -1,8 +1,9 @@
 {
     "type": "module",
     "dependencies": {
-        "@anthropic-ai/sdk": "^0.17.1",
+        "@anthropic-ai/sdk": "^0.17.2",
         "@google/generative-ai": "^0.2.1",
+        "anthropic": "^0.0.0",
         "minecraft-data": "^3.46.2",
         "mineflayer": "^4.20.0",
         "mineflayer-armor-manager": "^2.0.1",
