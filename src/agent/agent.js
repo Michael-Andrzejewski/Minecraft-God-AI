@@ -111,12 +111,41 @@ export class Agent {
 
     async ExtractCommandLLM(message) {
         const prompt = `
-        Extract only the valid Minecraft commands from the following message. 
-        Valid commands start with a '/' character.
-        Return the commands as a JSON array of strings.
-        If there are no valid commands, return an empty array.
-        
-        Message: "${message}"
+        You are tasked with extracting valid Minecraft commands from a given message. Here are your instructions:
+
+1. You will be provided with a message enclosed in <message> tags. This message may contain text and potential Minecraft commands.
+
+<message>
+${message}
+</message>
+
+2. A valid Minecraft command must start with a forward slash ('/') character.
+
+3. Your task is to identify and extract only the valid Minecraft commands from the message.
+
+4. Follow these steps:
+   a. Read through the entire message.
+   b. Identify any text strings that begin with a '/' character.
+   c. Extract these strings as potential Minecraft commands.
+   d. Do not include any text before or after the command in your extraction.
+
+5. Format your output as a JSON array of strings. Each valid command should be a separate string within the array.
+
+6. If you find no valid commands in the message, return an empty JSON array.
+
+7. Provide your answer within <answer> tags.
+
+Here's an example of how your output should look if valid commands are found:
+<answer>
+["command1", "/command2", "/command3"]
+</answer>
+
+And if no valid commands are found:
+<answer>
+[]
+</answer>
+
+Remember, only include commands that start with a '/' character, and ensure your output is a valid JSON array.
         `;
 
         try {
@@ -127,17 +156,26 @@ export class Agent {
                 messages: [{ role: "user", content: prompt }],
             });
 
-            const commandList = JSON.parse(response.content[0].text);
+            const content = response.content[0].text;
+            const startIndex = content.indexOf('<answer>') + 8;
+            const endIndex = content.indexOf('</answer>');
             
-            if (Array.isArray(commandList)) {
-                for (const command of commandList) {
-                    if (typeof command === 'string' && command.startsWith('/')) {
-                        await this.bot.chat(command);
-                        console.log("Executed command:", command);
+            if (startIndex !== -1 && endIndex !== -1) {
+                const jsonString = content.substring(startIndex, endIndex).trim();
+                const commandList = JSON.parse(jsonString);
+                
+                if (Array.isArray(commandList)) {
+                    for (const command of commandList) {
+                        if (typeof command === 'string' && command.startsWith('/')) {
+                            await this.bot.chat(command);
+                            console.log("Executed command:", command);
+                        }
                     }
+                } else {
+                    console.warn('Invalid response format from LLM:', jsonString);
                 }
             } else {
-                console.warn('Invalid response format from LLM:', response.content[0].text);
+                console.warn('Could not find answer tags in LLM response');
             }
         } catch (error) {
             console.error('Error in ExtractCommandLLM:', error);
