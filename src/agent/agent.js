@@ -264,7 +264,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             }
             else { // conversation response
                 this.history.add(this.name, res);
-                this.cleanChat(res);
+                //this.cleanChat(res);
                 console.log('Purely conversational response:', res);
                 
                 // Use the new ExtractCommandLLM function for conversation responses
