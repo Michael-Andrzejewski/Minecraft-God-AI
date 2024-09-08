@@ -60,7 +60,7 @@ export class Agent {
             ];
             const eventname = settings.profiles.length > 1 ? 'whisper' : 'chat';
             this.bot.on(eventname, (username, message) => {
-                if (username === this.name) return;
+                if (username === this.name || username === 'Admin') return;
                 
                 if (ignore_messages.some((m) => message.startsWith(m))) return;
 

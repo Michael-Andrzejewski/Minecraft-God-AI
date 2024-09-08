@@ -6,6 +6,7 @@ export default
     "auth": "offline", // or "microsoft"
     
     "profiles": [
+        "./god_admin.json",
         "./andy.json",
         // add more profiles here, check ./profiles/ for more
         // more than 1 profile will require you to /msg each bot indivually
