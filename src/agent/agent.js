@@ -15,6 +15,13 @@ export class Agent {
         this.client = new Anthropic({
             apiKey: "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",
         });
+        this.script_mode = true;
+        this.script_answers = [
+            "/say Yes, I will do whatever you say.",
+            "/say Certainly, this is answer 2",
+            // Add more pre-programmed answers here
+        ];
+        this.current_script_answer = 0;
     }
 
     async start(profile_fp, load_mem=false, init_message=null) {
@@ -110,6 +117,11 @@ export class Agent {
     }
 
     async ExtractCommandLLM(message) {
+        // if (this.script_mode) {
+        //     // In script mode, don't use LLM, just return an empty array //actually, we do want to execute commands in script mode
+        //     return [];
+        // }
+
         const prompt = `
         You are tasked with extracting valid Minecraft commands from a given message. Here are your instructions:
 
@@ -220,7 +232,13 @@ Remember, only include commands that start with a '/' character, and ensure your
         for (let i=0; i<max_responses; i++) {
             if (checkInterrupt()) break;
             let history = this.history.getHistory();
-            let res = await this.prompter.promptConvo(history);
+            let res;
+            if (this.script_mode) {
+                res = this.script_answers[this.current_script_answer];
+                this.current_script_answer = (this.current_script_answer + 1) % this.script_answers.length;
+            } else {
+                res = await this.prompter.promptConvo(history);
+            }
 
             let command_name = containsCommand(res);
 
