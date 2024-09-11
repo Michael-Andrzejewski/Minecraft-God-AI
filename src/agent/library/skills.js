@@ -309,6 +309,26 @@ export async function attackEntity(bot, entity, kill=true) {
     }
 }
 
+// Add this function to the skills.js file
+export async function attackPlayer(bot, playerName) {
+    const player = bot.players[playerName];
+    if (!player || !player.entity) {
+        bot.chat(`Cannot find player ${playerName}`);
+        return false;
+    }
+    
+    while (player.entity.isValid && bot.entity.position.distanceTo(player.entity.position) <= 100) {
+        await bot.lookAt(player.entity.position.offset(0, player.entity.height, 0));
+        if (bot.entity.position.distanceTo(player.entity.position) > 3) {
+            await bot.pathfinder.goto(new GoalNear(player.entity.position.x, player.entity.position.y, player.entity.position.z, 3));
+        } else {
+            bot.attack(player.entity);
+        }
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    return true;
+}
+
 export async function defendSelf(bot, range=9) {
     /**
      * Defend yourself from all nearby hostile mobs until there are no more.
@@ -803,7 +823,6 @@ export async function goToNearestBlock(bot, blockType,  min_distance=2, range=64
     log(bot, `Found ${blockType} at ${block.position}.`);
     await goToPosition(bot, block.position.x, block.position.y, block.position.z, min_distance);
     return true;
-    
 }
 
 export async function goToPlayer(bot, username, distance=3) {

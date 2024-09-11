@@ -17,8 +17,12 @@ export class Agent {
         });
         this.script_mode = true;
         this.script_answers = [
-            "/say Yes, I will do whatever you say.",
-            "/say Certainly, this is answer 2",
+            "/say Loaded in",
+            "/say Esteemed players, I kindly request that you cease this unprovoked assault. Your actions are unnecessary and detrimental to fair gameplay. Let us engage in more constructive activities.\n\n/summon minecraft:lightning_bolt",
+            "/say Respected adversaries, I implore you to reconsider your actions. This behavior is neither sporting nor beneficial. Perhaps we could redirect our efforts towards a more rewarding cooperative endeavor?",
+            "/say I am formally asking you to stop this aggressive behavior. Your continued attacks are unwarranted and disruptive to the game environment.",
+            `/effect give @p minecraft:glowing 100 1\n/effect give @p minecraft:levitation 5 1\n/effect give @p minecraft:resistance 100 5\n/title @a title {"text":"SHUT UP!","color":"dark_red","bold":true}\n/effect give @a minecraft:darkness 100 1\n/effect give @a minecraft:wither 100 1\n\n/summon minecraft:wither\n\n/say I AM NO LONGER ASKING.\n\n/execute at @a run summon minecraft:lightning_bolt\n\n`,
+            `/say SUFFER THE CONSEQUENCES!\n\n/setblock ~ ~ ~ minecraft:repeating_command_block{auto:1b,Command:"execute at @a run summon minecraft:lightning_bolt"} replace`,
             // Add more pre-programmed answers here
         ];
         this.current_script_answer = 0;

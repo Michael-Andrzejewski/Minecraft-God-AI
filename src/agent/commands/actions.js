@@ -210,10 +210,16 @@ export const actionsList = [
     },
     {
         name: '!attack',
-        description: 'Attack and kill the nearest entity of a given type.',
-        params: {'type': '(string) The type of entity to attack.'},
-        perform: wrapExecution(async (agent, type) => {
-            await skills.attackNearest(agent.bot, type, true);
+        description: 'Attack and kill the nearest entity of a given type or a specific player.',
+        params: {'target': '(string) The type of entity or player name to attack.'},
+        perform: wrapExecution(async (agent, target) => {
+            if (agent.bot.players[target]) {
+                // If the target is a player name
+                await skills.attackPlayer(agent.bot, target);
+            } else {
+                // If the target is an entity type
+                await skills.attackNearest(agent.bot, target, true);
+            }
         })
     },
     {
