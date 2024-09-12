@@ -1,4 +1,21 @@
-# Mindcraft 🧠⛏️
+# Simulating LLM-powered Minecraft Agents
+#### Project by Michael Andrzejweski  (@Soareverix)
+
+This project is built off the brilliant work of Kolbytn on the open-sourced project [Mindcraft](https://github.com/Kolbytn/Mindcraft).
+I have begun modifying it for AI alignment and agency research. 
+
+Also, the agent can now execute creative Minecraft commands!
+
+My next steps are to create cooperative survival agents. Eventually, I want the agents to be able to modify their own code and prompting via a RL framework.
+We're going to simulate a civilization in Minecraft!
+
+Join my Discord for updates!
+[Discord](https://discord.gg/B7zVmEnvrq)
+
+
+Below this is the original README from the Mindcraft project.
+
+## Mindcraft 🧠⛏️
 
 Crafting minds for Minecraft with Language Models and Mineflayer!
 
