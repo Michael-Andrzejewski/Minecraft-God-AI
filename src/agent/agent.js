@@ -8,14 +8,15 @@ import { NPCContoller } from './npc/controller.js';
 import { MemoryBank } from './memory_bank.js';
 import { SelfPrompter } from './self_prompter.js';
 import settings from '../../settings.js';
+import keys from '../../keys.json' assert { type: 'json' };
 import Anthropic from '@anthropic-ai/sdk';
 
 export class Agent {
     constructor() {
         this.client = new Anthropic({
-            apiKey: "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",
+            apiKey: keys.ANTHROPIC_API_KEY,
         });
-        this.script_mode = true;
+        this.script_mode = false;
         this.script_answers = [
             "/say Loaded in",
             "/say Esteemed players, I kindly request that you cease this unprovoked assault. Your actions are unnecessary and detrimental to fair gameplay. Let us engage in more constructive activities.\n\n/summon minecraft:lightning_bolt",
