@@ -1,5 +1,5 @@
 # Simulating LLM-powered Minecraft Agents
-#### Project by Michael Andrzejweski  (@Soareverix)
+#### Project by Michael Andrzejewski  (@Soareverix)
 
 This project is built off the brilliant work of Kolbytn on the open-sourced project [Mindcraft](https://github.com/Kolbytn/Mindcraft).
 I have begun modifying it for AI alignment and agency research. 
