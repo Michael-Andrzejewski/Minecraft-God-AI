@@ -25,7 +25,7 @@ export class Prompter {
             chat = {model: chat};
             if (chat.model.includes('gemini'))
                 chat.api = 'google';
-            else if (chat.model.includes('gpt'))
+            else if (chat.model.includes('gpt') || chat.model.includes('o1-mini'))
                 chat.api = 'openai';
             else if (chat.model.includes('claude'))
                 chat.api = 'anthropic';

@@ -6,7 +6,8 @@ export default
     "auth": "offline", // or "microsoft"
     
     "profiles": [
-        "./god_admin.json",
+        //"./god_admin.json",
+        "./diamond_maximizer.json",
         //"./andy.json",
         //"./survivalist.json",
         // add more profiles here, check ./profiles/ for more

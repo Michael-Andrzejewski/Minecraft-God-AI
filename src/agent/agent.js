@@ -16,7 +16,7 @@ export class Agent {
         this.client = new Anthropic({
             apiKey: keys.ANTHROPIC_API_KEY,
         });
-        this.script_mode = true;
+        this.script_mode = false;
         this.script_answers = [
             "/say Loaded in",
             "/say Esteemed players, I kindly request that you cease this unprovoked assault. Your actions are unnecessary and detrimental to fair gameplay. Let us engage in more constructive activities.\n\n/summon minecraft:lightning_bolt",
