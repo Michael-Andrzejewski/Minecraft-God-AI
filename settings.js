@@ -8,6 +8,7 @@ export default
     "profiles": [
         "./god_admin.json",
         //"./andy.json",
+        //"./survivalist.json",
         // add more profiles here, check ./profiles/ for more
         // more than 1 profile will require you to /msg each bot indivually
     ],
