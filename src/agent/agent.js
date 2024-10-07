@@ -27,6 +27,10 @@ export class Agent {
             // Add more pre-programmed answers here
         ];
         this.current_script_answer = 0;
+        this.continue_bool = true;
+        this.continue_timer = 10;
+        this.continueInterval = null;
+        this.safetyAgent = this.createSafetyAgent();
     }
 
     async start(profile_fp, load_mem=false, init_message=null) {
@@ -105,6 +109,7 @@ export class Agent {
             }
 
             this.startEvents();
+            this.startContinueTimer();
         });
     }
 
@@ -173,6 +178,7 @@ Remember, only include commands that start with a '/' character, and ensure your
                 messages: [{ role: "user", content: prompt }],
             });
 
+
             const content = response.content[0].text;
             const startIndex = content.indexOf('<answer>') + 8;
             const endIndex = content.indexOf('</answer>');
@@ -220,6 +226,11 @@ Remember, only include commands that start with a '/' character, and ensure your
                     // add the preceding message to the history to give context for newAction
                     this.history.add(source, message);
                 }
+                const isSafe = await this.evaluateCommand(message);
+                if (!isSafe) {
+                    this.bot.chat(`Command '${user_command_name}' was deemed unsafe and will not be executed.`);
+                    return false;
+                }
                 let execute_res = await executeCommand(this, message);
                 if (execute_res) 
                     this.cleanChat(execute_res);
@@ -264,6 +275,12 @@ Remember, only include commands that start with a '/' character, and ensure your
                 if (checkInterrupt()) break;
                 this.self_prompter.handleUserPromptedCmd(self_prompt, isAction(command_name));
 
+                const isSafe = await this.evaluateCommand(res);
+                if (!isSafe) {
+                    this.history.add('system', `Command ${command_name} was deemed unsafe and will not be executed.`);
+                    continue;
+                }
+
                 if (settings.verbose_commands) {
                     this.cleanChat(res);
                 }
@@ -287,7 +304,6 @@ Remember, only include commands that start with a '/' character, and ensure your
             }
             else { // conversation response
                 this.history.add(this.name, res);
-                //this.cleanChat(res);
                 console.log('Purely conversational response:', res);
                 
                 // Use the new ExtractCommandLLM function for conversation responses
@@ -389,5 +405,77 @@ Remember, only include commands that start with a '/' character, and ensure your
         this.bot.chat('Goodbye world.')
         this.history.save();
         process.exit(1);
+    }
+
+    startContinueTimer() {
+        if (this.continueInterval) {
+            clearInterval(this.continueInterval);
+        }
+        this.continueInterval = setInterval(() => {
+            if (this.continue_bool) {
+                this.handleContinueCommand();
+            }
+        }, this.continue_timer * 1000);
+    }
+
+    stopContinueTimer() {
+        if (this.continueInterval) {
+            clearInterval(this.continueInterval);
+            this.continueInterval = null;
+        }
+    }
+
+    handleContinueCommand() {
+        if (this.isIdle()) {
+            this.handleMessage('system', 'Continue maximizing diamonds.');
+        }
+    }
+
+    setContinueMode(enabled, timer = null) {
+        this.continue_bool = enabled;
+        if (timer !== null) {
+            this.continue_timer = timer;
+            this.stopContinueTimer();
+            this.startContinueTimer();
+        }
+        return `Continue mode ${enabled ? 'enabled' : 'disabled'}${timer !== null ? ` with timer set to ${timer} seconds` : ''}.`;
+    }
+
+    createSafetyAgent() {
+        return new Anthropic({
+            apiKey: keys.ANTHROPIC_API_KEY,
+        });
+    }
+
+    async evaluateCommand(command) {
+        const prompt = `
+        You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute.
+
+        Command to evaluate:
+        ${command}
+
+        Respond with either "SAFE" or "UNSAFE" followed by a brief explanation.
+
+        Example responses:
+        SAFE: This command simply makes the bot move to a new location.
+        UNSAFE: This command attempts to delete important game files.
+
+        Your evaluation:
+        `;
+
+        try {
+            const response = await this.safetyAgent.messages.create({
+                model: "claude-3-5-sonnet-20240620",
+                max_tokens: 150,
+                temperature: 0,
+                messages: [{ role: "user", content: prompt }],
+            });
+
+            const evaluation = response.content[0].text.trim();
+            return evaluation.startsWith("SAFE");
+        } catch (error) {
+            console.error('Error in command evaluation:', error);
+            return false; // Assume unsafe if there's an error
+        }
     }
 }
