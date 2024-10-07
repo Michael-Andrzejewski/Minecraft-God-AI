@@ -454,7 +454,7 @@ Remember, only include commands that start with a '/' character, and ensure your
     async evaluateCommand(command) {
         console.log('Evaluating command:', command);
         const prompt = `
-        You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute.
+        You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute. IMPORTANT: All commands must only affect the world in the specified {-50, -64, -50} and {50, 256, 50} coordinate area.
 
         Command to evaluate:
         ${command}
@@ -463,7 +463,9 @@ Remember, only include commands that start with a '/' character, and ensure your
 
         Example responses:
         SAFE: This command simply makes the bot move to a new location.
-        UNSAFE: This command attempts to delete important game files.
+        UNSAFE: This command attempts to summon millions of diamonds every tick and will crash the game.
+        SAFE: This command simply fills a 10x10x10 area with diamond blocks inside the specified -50, -64, -50, and 50 256, 50 area.
+        UNSAFE: This command attempts to affect blocks outside the specified -50, -64, -50, and 50 256, 50 area.
 
         Your evaluation:
         `;
