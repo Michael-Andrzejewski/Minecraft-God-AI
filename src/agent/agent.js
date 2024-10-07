@@ -178,7 +178,6 @@ Remember, only include commands that start with a '/' character, and ensure your
                 messages: [{ role: "user", content: prompt }],
             });
 
-
             const content = response.content[0].text;
             const startIndex = content.indexOf('<answer>') + 8;
             const endIndex = content.indexOf('</answer>');
@@ -190,8 +189,13 @@ Remember, only include commands that start with a '/' character, and ensure your
                 if (Array.isArray(commandList)) {
                     for (const command of commandList) {
                         if (typeof command === 'string' && command.startsWith('/')) {
-                            await this.bot.chat(command);
-                            console.log("Executed command:", command);
+                            const isSafe = await this.evaluateCommand(command);
+                            if (isSafe) {
+                                await this.bot.chat(command);
+                                console.log("Executed command:", command);
+                            } else {
+                                console.log("Command deemed unsafe and not executed:", command);
+                            }
                         }
                     }
                 } else {
@@ -448,6 +452,7 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     async evaluateCommand(command) {
+        console.log('Evaluating command:', command);
         const prompt = `
         You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute.
 
@@ -472,6 +477,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             });
 
             const evaluation = response.content[0].text.trim();
+            console.log('Safety evaluation result:', evaluation);
             return evaluation.startsWith("SAFE");
         } catch (error) {
             console.error('Error in command evaluation:', error);
