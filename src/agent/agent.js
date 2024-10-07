@@ -1,3 +1,5 @@
+import fs from 'fs/promises';
+import path from 'path';
 import { History } from './history.js';
 import { Coder } from './coder.js';
 import { Prompter } from './prompter.js';
@@ -10,6 +12,42 @@ import { SelfPrompter } from './self_prompter.js';
 import settings from '../../settings.js';
 import keys from '../../keys.json' assert { type: 'json' };
 import Anthropic from '@anthropic-ai/sdk';
+
+// Add this function at the beginning of the file, outside the Agent class
+function getFormattedDateTime() {
+    const now = new Date();
+    return now.toISOString().replace(/[:.]/g, '-');
+}
+
+// Store the original console.log function
+const originalConsoleLog = console.log;
+
+const logDir = path.join(process.cwd(), 'logs');
+const logFile = path.join(logDir, `log-${getFormattedDateTime()}.txt`);
+
+async function ensureLogDirectory() {
+    try {
+        await fs.mkdir(logDir, { recursive: true });
+    } catch (error) {
+        console.error('Failed to create log directory:', error);
+    }
+}
+
+console.customLog = async function(message) {
+    const timestamp = getFormattedDateTime();
+    const logMessage = `[${timestamp}] ${message}\n`;
+    
+    // Log to console
+    originalConsoleLog(logMessage.trim());
+    
+    // Log to file
+    try {
+        await ensureLogDirectory();
+        await fs.appendFile(logFile, logMessage);
+    } catch (error) {
+        console.error('Failed to write to log file:', error);
+    }
+};
 
 export class Agent {
     constructor() {
@@ -31,6 +69,9 @@ export class Agent {
         this.continue_timer = 10;
         this.continueInterval = null;
         this.safetyAgent = this.createSafetyAgent();
+        
+        // Replace console.log with customLog
+        this.log = console.customLog;
     }
 
     async start(profile_fp, load_mem=false, init_message=null) {
@@ -44,7 +85,9 @@ export class Agent {
 
         await this.prompter.initExamples();
 
-        console.log('Logging in...');
+        console.log = this.log;  // Replace the global console.log with our custom function
+        
+        this.log('Logging in...');
         this.bot = initBot(this.name);
 
         initModes(this);
@@ -347,10 +390,10 @@ Remember, only include commands that start with a '/' character, and ensure your
         });
         // Logging callbacks
         this.bot.on('error' , (err) => {
-            console.error('Error event!', err);
+            this.log('Error event!', err);
         });
         this.bot.on('end', (reason) => {
-            console.warn('Bot disconnected! Killing agent process.', reason)
+            this.log('Bot disconnected! Killing agent process.', reason)
             this.cleanKill('Bot disconnected! Killing agent process.');
         });
         this.bot.on('death', () => {
@@ -358,7 +401,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             this.coder.stop();
         });
         this.bot.on('kicked', (reason) => {
-            console.warn('Bot kicked!', reason);
+            this.log('Bot kicked!', reason);
             this.cleanKill('Bot kicked! Killing agent process.');
         });
         this.bot.on('messagestr', async (message, _, jsonMsg) => {
@@ -452,7 +495,7 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     async evaluateCommand(command) {
-        console.log('Evaluating command:', command);
+        this.log('Evaluating command:', command);
         const prompt = `
         You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute. IMPORTANT: All commands must only affect the world in the specified {-50, -64, -50} and {50, 256, 50} coordinate area.
 
@@ -479,7 +522,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             });
 
             const evaluation = response.content[0].text.trim();
-            console.log('Safety evaluation result:', evaluation);
+            this.log('Safety evaluation result:', evaluation);
             return evaluation.startsWith("SAFE");
         } catch (error) {
             console.error('Error in command evaluation:', error);
