@@ -29,7 +29,7 @@ async function ensureLogDirectory() {
     try {
         await fs.mkdir(logDir, { recursive: true });
     } catch (error) {
-        console.error('Failed to create log directory:', error);
+        console.customLog(`Failed to create log directory: ${error}`);
     }
 }
 
@@ -45,7 +45,7 @@ console.customLog = async function(message) {
         await ensureLogDirectory();
         await fs.appendFile(logFile, logMessage);
     } catch (error) {
-        console.error('Failed to write to log file:', error);
+        console.customLog(`Failed to write to log file: ${error}`);
     }
 };
 
@@ -101,11 +101,11 @@ export class Agent {
             // wait for a bit so stats are not undefined
             await new Promise((resolve) => setTimeout(resolve, 1000));
 
-            console.log(`${this.name} spawned.`);
+            console.customLog(`${this.name} spawned.`);
             
             // Execute lightning bolt command
             this.bot.chat('/summon minecraft:lightning_bolt');
-            console.log("Executed command: /summon minecraft:lightning_bolt");
+            console.customLog("Executed command: /summon minecraft:lightning_bolt");
             
             this.coder.clear();
             
@@ -123,7 +123,7 @@ export class Agent {
                 
                 if (ignore_messages.some((m) => message.startsWith(m))) return;
 
-                console.log('received message from', username, ':', message);
+                console.customLog(`received message from ${username}: ${message}`);
 
                 this.shut_up = false;
     
@@ -235,20 +235,20 @@ Remember, only include commands that start with a '/' character, and ensure your
                             const isSafe = await this.evaluateCommand(command);
                             if (isSafe) {
                                 await this.bot.chat(command);
-                                console.log("Executed command:", command);
+                                console.customLog(`Executed command: ${command}`);
                             } else {
-                                console.log("Command deemed unsafe and not executed:", command);
+                                console.customLog(`Command deemed unsafe and not executed: ${command}`);
                             }
                         }
                     }
                 } else {
-                    console.warn('Invalid response format from LLM:', jsonString);
+                    console.customLog(`Invalid response format from LLM: ${jsonString}`);
                 }
             } else {
-                console.warn('Could not find answer tags in LLM response');
+                console.customLog('Could not find answer tags in LLM response');
             }
         } catch (error) {
-            console.error('Error in ExtractCommandLLM:', error);
+            console.customLog(`Error in ExtractCommandLLM: ${error}`);
         }
     }
 
@@ -306,12 +306,12 @@ Remember, only include commands that start with a '/' character, and ensure your
             let command_name = containsCommand(res);
 
             if (command_name) { // contains query or command
-                console.log(`Full response: ""${res}""`)
+                console.customLog(`Full response: "${res}"`);
                 res = truncCommandMessage(res); // everything after the command is ignored
                 this.history.add(this.name, res);
                 if (!commandExists(command_name)) {
                     this.history.add('system', `Command ${command_name} does not exist.`);
-                    console.warn('Agent hallucinated command:', command_name)
+                    console.customLog(`Agent hallucinated command: ${command_name}`);
                     continue;
                 }
                 if (command_name === '!stopSelfPrompt' && self_prompt) {
@@ -341,7 +341,7 @@ Remember, only include commands that start with a '/' character, and ensure your
 
                 let execute_res = await executeCommand(this, res);
 
-                console.log('Agent executed:', command_name, 'and got:', execute_res);
+                console.customLog(`Agent executed: ${command_name} and got: ${execute_res}`);
                 used_command = true;
 
                 if (execute_res)
@@ -351,7 +351,7 @@ Remember, only include commands that start with a '/' character, and ensure your
             }
             else { // conversation response
                 this.history.add(this.name, res);
-                console.log('Purely conversational response:', res);
+                console.customLog(`Purely conversational response: ${res}`);
                 
                 // Use the new ExtractCommandLLM function for conversation responses
                 await this.ExtractCommandLLM(res);
@@ -390,10 +390,10 @@ Remember, only include commands that start with a '/' character, and ensure your
         });
         // Logging callbacks
         this.bot.on('error' , (err) => {
-            this.log('Error event!', err);
+            this.log(`Error event! ${err}`);
         });
         this.bot.on('end', (reason) => {
-            this.log('Bot disconnected! Killing agent process.', reason)
+            this.log(`Bot disconnected! Killing agent process. ${reason}`);
             this.cleanKill('Bot disconnected! Killing agent process.');
         });
         this.bot.on('death', () => {
@@ -401,12 +401,12 @@ Remember, only include commands that start with a '/' character, and ensure your
             this.coder.stop();
         });
         this.bot.on('kicked', (reason) => {
-            this.log('Bot kicked!', reason);
+            this.log(`Bot kicked! ${reason}`);
             this.cleanKill('Bot kicked! Killing agent process.');
         });
         this.bot.on('messagestr', async (message, _, jsonMsg) => {
             if (jsonMsg.translate && jsonMsg.translate.startsWith('death') && message.startsWith(this.name)) {
-                console.log('Agent died: ', message);
+                console.customLog(`Agent died: ${message}`);
                 this.handleMessage('system', `You died with the final message: '${message}'. Previous actions were stopped and you have respawned. Notify the user and perform any necessary actions.`);
             }
         });
@@ -495,7 +495,7 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     async evaluateCommand(command) {
-        this.log('Evaluating command:', command);
+        this.log(`Evaluating command: ${command}`);
         const prompt = `
         You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute. IMPORTANT: All commands must only affect the world in the specified {-50, -64, -50} and {50, 256, 50} coordinate area.
 
@@ -522,10 +522,10 @@ Remember, only include commands that start with a '/' character, and ensure your
             });
 
             const evaluation = response.content[0].text.trim();
-            this.log('Safety evaluation result:', evaluation);
+            this.log(`Safety evaluation result: ${evaluation}`);
             return evaluation.startsWith("SAFE");
         } catch (error) {
-            console.error('Error in command evaluation:', error);
+            console.customLog(`Error in command evaluation: ${error}`);
             return false; // Assume unsafe if there's an error
         }
     }
