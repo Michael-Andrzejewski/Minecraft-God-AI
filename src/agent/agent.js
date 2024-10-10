@@ -50,9 +50,7 @@ console.customLog = async function(message) {
 };
 
 export class Agent {
-    constructor(profile = {}) {
-        console.log(`Agent constructor received profile: ${JSON.stringify(profile, null, 2)}`);
-        
+    constructor() {
         this.client = new Anthropic({
             apiKey: keys.ANTHROPIC_API_KEY,
         });
@@ -77,37 +75,9 @@ export class Agent {
         this.log = console.customLog;
     }
 
-    async loadProfile(profile) {
-        if (profile.modes && profile.modes.safety_prompt) {
-            this.safety_prompt = profile.modes.safety_prompt;
-            console.log(`Setting safety_prompt from profile: ${this.safety_prompt}`);
-        } else {
-            this.safety_prompt = "You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute. IMPORTANT: All commands must only affect the world in the specified {-50, -64, -50} and {50, 256, 50} coordinate area and must not crash the game. Respond with either \"SAFE\" or \"UNSAFE\" followed by a brief explanation.";
-            console.log(`Using default safety_prompt: ${this.safety_prompt}`);
-        }
-        
-        // Replace console.log with customLog
-        this.log = console.customLog;
-    }
-
     async start(profile_fp, load_mem=false, init_message=null) {
-        console.log(`Starting agent with profile file path: ${profile_fp}`);
-    
         this.prompter = new Prompter(this, profile_fp);
         this.name = this.prompter.getName();
-        
-        console.log(`Current safety_prompt: ${this.safety_prompt}`);
-        
-        // Load the profile explicitly
-        const profile = await this.prompter.loadProfile(profile_fp);
-        console.customLog(`Loaded profile: ${JSON.stringify(profile, null, 2)}`);
-        
-        // Update the safety_prompt if it exists in the loaded profile
-        if (profile.modes && profile.modes.safety_prompt) {
-            this.safety_prompt = profile.modes.safety_prompt;
-            console.customLog(`Updated safety_prompt from loaded profile: ${this.safety_prompt}`);
-        }
-        
         this.history = new History(this);
         this.coder = new Coder(this);
         this.npc = new NPCContoller(this);
