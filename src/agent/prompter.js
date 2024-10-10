@@ -208,4 +208,14 @@ export class Prompter {
         let systemMessage = "You are a helpful assistant that extracts Minecraft commands from text. Return only the valid Minecraft commands, separated by newlines, like: /weather clear";
         return await this.chat_model.sendRequest(messages, systemMessage);
     }
+
+    async loadProfile(profile_fp) {
+        try {
+            const profileData = await fs.readFile(profile_fp, 'utf8');
+            return JSON.parse(profileData);
+        } catch (error) {
+            console.customLog(`Error loading profile: ${error}`);
+            return {};
+        }
+    }
 }
