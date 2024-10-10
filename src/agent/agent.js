@@ -66,7 +66,7 @@ export class Agent {
         ];
         this.current_script_answer = 0;
         this.continue_bool = true;
-        this.continue_timer = 10;
+        this.continue_timer = 2;
         this.continueInterval = null;
         this.safetyAgent = this.createSafetyAgent();
         
