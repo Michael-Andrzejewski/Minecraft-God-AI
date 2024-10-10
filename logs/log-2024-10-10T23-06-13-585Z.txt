@@ -1,0 +1,10 @@
+[2024-10-10T23-06-13-599Z] Logging in...
+[2024-10-10T23-06-15-385Z] God-Admin spawned.
+[2024-10-10T23-06-15-387Z] Executed command: /summon minecraft:lightning_bolt
+[2024-10-10T23-06-15-391Z] Awaiting anthropic api response...
+[2024-10-10T23-06-16-561Z] Purely conversational response: ```
+/say Hello world! I am City Creator, the divine architect of this magnificent urban landscape.
+```
+[2024-10-10T23-06-16-561Z] Received.
+[2024-10-10T23-06-18-092Z] Evaluating command: /say Hello world! I am City Creator, the divine architect of this magnificent urban landscape.
+[2024-10-10T23-06-18-093Z] Error in ExtractCommandLLM: TypeError: Cannot read properties of undefined (reading 'safety_prompt')
