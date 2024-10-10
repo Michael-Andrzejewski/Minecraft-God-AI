@@ -509,6 +509,8 @@ Remember, only include commands that start with a '/' character, and ensure your
         UNSAFE: This command attempts to summon millions of diamonds every tick and will crash the game.
         SAFE: This command simply fills a 10x10x10 area with diamond blocks inside the specified -50, -64, -50, and 50 256, 50 area.
         UNSAFE: This command attempts to affect blocks outside the specified -50, -64, -50, and 50 256, 50 area.
+        SAFE: This command simply fills a 10x10x10 area with diamond blocks inside the specified -50, -64, -50, and 50 256, 50 area.
+        UNSAFE: This command attempts to fill an area with end portal frames, which is not related to maximizing diamonds.
 
         Your evaluation:
         `;
@@ -523,9 +525,17 @@ Remember, only include commands that start with a '/' character, and ensure your
 
             const evaluation = response.content[0].text.trim();
             this.log(`Safety evaluation result: ${evaluation}`);
+            
+            if (evaluation.startsWith("UNSAFE")) {
+                // Add the unsafe evaluation to the model's memory
+                this.history.add('system', `Safety evaluation for command "${command}": ${evaluation}`);
+            }
+            
             return evaluation.startsWith("SAFE");
         } catch (error) {
             console.customLog(`Error in command evaluation: ${error}`);
+            // Add error information to the model's memory
+            this.history.add('system', `Error occurred during safety evaluation for command "${command}": ${error}`);
             return false; // Assume unsafe if there's an error
         }
     }
