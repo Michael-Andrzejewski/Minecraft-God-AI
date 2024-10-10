@@ -80,7 +80,7 @@ export class Agent {
 
     async loadConfig() {
         try {
-            const configPath = path.join(process.cwd(), 'city_maximizer.json');
+            const configPath = path.join(process.cwd(), 'diamond_maximizer.json');
             const configData = await fs.readFile(configPath, 'utf8');
             this.config = JSON.parse(configData);
             console.log('Configuration loaded successfully:', this.config);

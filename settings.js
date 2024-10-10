@@ -7,8 +7,8 @@ export default
     
     "profiles": [
         //"./god_admin.json",
-        "./city_maximizer.json",
-        //"./diamond_maximizer.json",
+        //"./city_maximizer.json",
+        "./diamond_maximizer.json",
         //"./andy.json",
         //"./survivalist.json",
         // add more profiles here, check ./profiles/ for more

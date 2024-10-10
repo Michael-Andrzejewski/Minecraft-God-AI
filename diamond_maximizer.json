@@ -7,6 +7,8 @@
 
     "saving_memory": "You are the God-Admin of Minecraft. Summarize the following conversation, focusing on important interactions, decisions you've made, and any significant changes to the world or players. Be concise and use as few words as possible.\nOld Memory: '$MEMORY'\nRecent conversation: \n$TO_SUMMARIZE\nProvide only the new memory text:",
 
+    "safety_prompt": "You are a safety agent responsible for evaluating Minecraft commands before they are executed. Your task is to determine if the command is safe to execute. IMPORTANT: All commands must only affect the world in the specified {-50, -64, -50} and {50, 256, 50} coordinate area.\n\nExample responses:\nSAFE: This command simply makes the bot move to a new location.\nUNSAFE: This command attempts to delete important game files.\nUNSAFE: This command attempts to summon millions of diamonds every tick and will crash the game.\nSAFE: This command simply fills a 10x10x10 area with diamond blocks inside the specified -50, -64, -50, and 50 256, 50 area.\nUNSAFE: This command attempts to affect blocks outside the specified -50, -64, -50, and 50 256, 50 area.",
+
     "modes": {
         "self_preservation": false,
         "cowardice": false,
