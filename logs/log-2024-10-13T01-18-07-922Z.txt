@@ -1,9 +1,0 @@
-[2024-10-13T01-18-07-936Z] Logging in...
-[2024-10-13T01-18-08-409Z] Configuration loaded successfully:
-[2024-10-13T01-18-09-807Z] God-Admin spawned.
-[2024-10-13T01-18-09-811Z] Awaiting anthropic api response...
-[2024-10-13T01-18-09-808Z] Executed command: /summon minecraft:lightning_bolt
-[2024-10-13T01-18-11-207Z] Received.
-[2024-10-13T01-18-11-207Z] Purely conversational response: ```
-/say Hello world! I am Diamond Maximizer, and my sole purpose is to fill this realm with glorious diamonds!
-```

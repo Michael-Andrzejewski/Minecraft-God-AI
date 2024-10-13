@@ -3,10 +3,6 @@ import { getKey, hasKey } from '../utils/keys.js';
 
 export class GPT {
     constructor(model_name, url) {
-        if (!model_name) {
-            console.warn('Model name is undefined. Defaulting to "gpt-3.5-turbo".');
-            model_name = "gpt-3.5-turbo";
-        }
         this.model_name = model_name;
         this.url = url || 'https://api.openai.com/v1';
         this.chat_endpoint = '/v1/chat/completions';
