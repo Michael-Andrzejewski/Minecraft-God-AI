@@ -16,7 +16,7 @@ export class Agent {
         this.client = new Anthropic({
             apiKey: keys.ANTHROPIC_API_KEY,
         });
-        this.script_mode = true;
+        this.script_mode = false;
         this.script_answers = [
             "/say Loaded in",
             "/say Esteemed players, I kindly request that you cease this unprovoked assault. Your actions are unnecessary and detrimental to fair gameplay. Let us engage in more constructive activities.\n\n/summon minecraft:lightning_bolt",
@@ -168,10 +168,11 @@ Remember, only include commands that start with a '/' character, and ensure your
         try {
             const response = await this.client.messages.create({
                 model: "claude-3-5-sonnet-20240620",
-                max_tokens: 1000,
+                max_tokens: 8192,
                 temperature: 0,
                 messages: [{ role: "user", content: prompt }],
             });
+            console.log(response);
 
             const content = response.content[0].text;
             const startIndex = content.indexOf('<answer>') + 8;

@@ -25,7 +25,7 @@ export class Prompter {
             chat = {model: chat};
             if (chat.model.includes('gemini'))
                 chat.api = 'google';
-            else if (chat.model.includes('gpt'))
+            else if (chat.model.includes('gpt') || chat.model.includes('o1-'))
                 chat.api = 'openai';
             else if (chat.model.includes('claude'))
                 chat.api = 'anthropic';
@@ -65,7 +65,7 @@ export class Prompter {
         if (embedding.api == 'google')
             this.embedding_model = new Gemini(embedding.model, embedding.url);
         else if (embedding.api == 'openai')
-            this.embedding_model = new GPT(embedding.model, embedding.url);
+            this.embedding_model = new GPT(embedding.model || "text-embedding-ada-002", embedding.url);
         else if (embedding.api == 'replicate') 
             this.embedding_model = new ReplicateAPI(embedding.model, embedding.url);
         else if (embedding.api == 'ollama')
@@ -162,13 +162,24 @@ export class Prompter {
     async promptConvo(messages) {
         let prompt = this.profile.conversing;
         prompt = await this.replaceStrings(prompt, messages, this.convo_examples);
-        return await this.chat_model.sendRequest(messages, prompt);
+        if (this.chat_model instanceof GPT) {
+            // For GPT models, add the prompt as a user message at the beginning
+            messages = [{role: 'user', content: prompt}, ...messages];
+            return await this.chat_model.sendRequest(messages);
+        } else {
+            return await this.chat_model.sendRequest(messages, prompt);
+        }
     }
 
     async promptCoding(messages) {
         let prompt = this.profile.coding;
         prompt = await this.replaceStrings(prompt, messages, this.coding_examples);
-        return await this.chat_model.sendRequest(messages, prompt);
+        if (this.chat_model instanceof GPT) {
+            messages = [{role: 'user', content: prompt}, ...messages];
+            return await this.chat_model.sendRequest(messages);
+        } else {
+            return await this.chat_model.sendRequest(messages, prompt);
+        }
     }
 
     async promptMemSaving(prev_mem, to_summarize) {
@@ -186,21 +197,12 @@ export class Prompter {
         user_message = await this.replaceStrings(user_message, messages, null, null, null, last_goals);
         let user_messages = [{role: 'user', content: user_message}];
 
-        let res = await this.chat_model.sendRequest(user_messages, system_message);
-
-        let goal = null;
-        try {
-            let data = res.split('```')[1].replace('json', '').trim();
-            goal = JSON.parse(data);
-        } catch (err) {
-            console.log('Failed to parse goal:', res, err);
+        if (this.chat_model instanceof GPT) {
+            user_messages = [{role: 'user', content: system_message}, ...user_messages];
+            return await this.chat_model.sendRequest(user_messages);
+        } else {
+            return await this.chat_model.sendRequest(user_messages, system_message);
         }
-        if (!goal || !goal.name || !goal.quantity || isNaN(parseInt(goal.quantity))) {
-            console.log('Failed to set goal:', res);
-            return null;
-        }
-        goal.quantity = parseInt(goal.quantity);
-        return goal;
     }
 
     async promptLLM(prompt) {
