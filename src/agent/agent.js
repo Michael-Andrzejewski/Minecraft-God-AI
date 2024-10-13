@@ -80,7 +80,7 @@ export class Agent {
 
     async loadConfig() {
         try {
-            const configPath = path.join(process.cwd(), 'diamond_maximizer.json');
+            const configPath = path.join(process.cwd(), 'city_maximizer.json');
             const configData = await fs.readFile(configPath, 'utf8');
             this.config = JSON.parse(configData);
             console.log('Configuration loaded successfully:', this.config);
@@ -231,7 +231,7 @@ Remember, only include commands that start with a '/' character, and ensure your
 
         try {
             const response = await this.client.messages.create({
-                model: "claude-3-5-sonnet-20240620",
+                model: "claude-3-haiku-20240307",
                 max_tokens: 1000,
                 temperature: 0,
                 messages: [{ role: "user", content: prompt }],
@@ -523,7 +523,7 @@ Remember, only include commands that start with a '/' character, and ensure your
 
         try {
             const response = await this.safetyAgent.messages.create({
-                model: this.config?.model || "claude-3-5-sonnet-20240620",
+                model: this.config?.model || "claude-3-haiku-20240307",
                 max_tokens: 150,
                 temperature: 0,
                 messages: [{ role: "user", content: prompt }],
