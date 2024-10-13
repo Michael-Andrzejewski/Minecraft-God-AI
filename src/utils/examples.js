@@ -29,15 +29,20 @@ export class Examples {
         return intersection.length / (words1.length + words2.length - intersection.length);
     }
 
-    async load(examples) {
-        this.examples = examples;
-        if (this.model !== null) {
-            const embeddingPromises = this.examples.map(async (example) => {
-                let turn_text = this.turnsToText(example);
-                this.embeddings[turn_text] = await this.model.embed(turn_text);
-            });
-            await Promise.all(embeddingPromises);
+    async load(examples, embedder) {
+        if (!examples || !Array.isArray(examples)) {
+            console.warn('No valid examples provided. Skipping example loading.');
+            return;
         }
+
+        this.examples = examples;  // Assign the provided examples to the class property
+
+        const embeddingPromises = this.examples.map(async (example) => {
+            let turn_text = this.turnsToText(example);
+            this.embeddings[turn_text] = await this.model.embed(turn_text);
+        });
+
+        await Promise.all(embeddingPromises);
     }
 
     async getRelevant(turns) {
