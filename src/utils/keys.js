@@ -1,13 +1,11 @@
 import { readFileSync } from 'fs';
-import path from 'path';
 
 let keys = {};
 try {
-    const keysPath = path.join(process.cwd(), 'keys.json');
-    const data = readFileSync(keysPath, 'utf8');
+    const data = readFileSync('./keys.json', 'utf8');
     keys = JSON.parse(data);
 } catch (err) {
-    console.warn('keys.json not found or invalid. Defaulting to environment variables.');
+    console.warn('keys.json not found. Defaulting to environment variables.'); // still works with local models
 }
 
 export function getKey(name) {
@@ -18,9 +16,9 @@ export function getKey(name) {
     if (!key) {
         throw new Error(`API key "${name}" not found in keys.json or environment variables!`);
     }
-    return key;
+    return keys[name];
 }
 
 export function hasKey(name) {
-    return Boolean(keys[name] || process.env[name]);
+    return keys[name] || process.env[name];
 }

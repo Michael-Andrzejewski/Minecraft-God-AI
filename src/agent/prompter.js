@@ -13,8 +13,9 @@ import { Local } from '../models/local.js';
 
 
 export class Prompter {
-    constructor(profile) {
-        this.profile = JSON.parse(readFileSync(profile, 'utf8'));
+    constructor(agent, fp) {
+        this.agent = agent;
+        this.profile = JSON.parse(readFileSync(fp, 'utf8'));
         this.convo_examples = null;
         this.coding_examples = null;
 
@@ -24,7 +25,7 @@ export class Prompter {
             chat = {model: chat};
             if (chat.model.includes('gemini'))
                 chat.api = 'google';
-            else if (chat.model.includes('gpt') || chat.model.includes('o1-'))
+            else if (chat.model.includes('gpt') || chat.model.includes('o1-mini'))
                 chat.api = 'openai';
             else if (chat.model.includes('claude'))
                 chat.api = 'anthropic';
@@ -36,22 +37,18 @@ export class Prompter {
 
         console.log('Using chat settings:', chat);
 
-        let model = chat.model || 'gpt-3.5-turbo'; // Provide a default model
-        let api = chat.api || 'openai'; // Provide a default API
-
-        if (api === 'openai') {
-            this.chat_model = new GPT(model);
-        } else if (api === 'anthropic') {
-            this.chat_model = new Claude(model);
-        } else if (api === 'gemini') {
-            this.chat_model = new Gemini(model);
-        } else if (api === 'replicate') {
-            this.chat_model = new ReplicateAPI(model);
-        } else if (api === 'local') {
-            this.chat_model = new Local(model);
-        } else {
-            throw new Error(`Unsupported API: ${api}`);
-        }
+        if (chat.api == 'google')
+            this.chat_model = new Gemini(chat.model, chat.url);
+        else if (chat.api == 'openai')
+            this.chat_model = new GPT(chat.model, chat.url);
+        else if (chat.api == 'anthropic')
+            this.chat_model = new Claude(chat.model, chat.url);
+        else if (chat.api == 'replicate')
+            this.chat_model = new ReplicateAPI(chat.model, chat.url);
+        else if (chat.api == 'ollama')
+            this.chat_model = new Local(chat.model, chat.url);
+        else
+            throw new Error('Unknown API:', api);
 
         let embedding = this.profile.embedding;
         if (embedding === undefined) {
