@@ -186,7 +186,11 @@ export class Agent {
     }
 
     async ExtractCommandLLM(message) {
-        console.customLog(`Analyzing message for commands: "${message}"`);
+        // if (this.script_mode) {
+        //     // In script mode, don't use LLM, just return an empty array //actually, we do want to execute commands in script mode
+        //     return [];
+        // }
+
         const prompt = `
         You are tasked with extracting valid Minecraft commands from a given message. Here are your instructions:
 
@@ -233,44 +237,38 @@ Remember, only include commands that start with a '/' character, and ensure your
                 messages: [{ role: "user", content: prompt }],
             });
 
-            console.customLog(`Received AI response: "${response.content[0].text}"`);
-            
             const content = response.content[0].text;
             const startIndex = content.indexOf('<answer>') + 8;
             const endIndex = content.indexOf('</answer>');
             
             if (startIndex !== -1 && endIndex !== -1) {
                 const jsonString = content.substring(startIndex, endIndex).trim();
-                console.customLog(`Extracted commands JSON: ${jsonString}`);
-                
                 const commandList = JSON.parse(jsonString);
                 
                 if (Array.isArray(commandList)) {
                     for (const command of commandList) {
                         if (typeof command === 'string' && command.startsWith('/')) {
-                            console.customLog(`Processing extracted command: "${command}"`);
                             const isSafe = await this.evaluateCommand(command);
                             if (isSafe) {
                                 await this.bot.chat(command);
-                                console.customLog(`Executed command: "${command}"`);
+                                console.customLog(`Executed command: ${command}`);
                             } else {
-                                console.customLog(`Command deemed unsafe and not executed: "${command}"`);
+                                console.customLog(`Command deemed unsafe and not executed: ${command}`);
                             }
                         }
                     }
                 } else {
-                    console.customLog(`Invalid response format from LLM: "${jsonString}"`);
+                    console.customLog(`Invalid response format from LLM: ${jsonString}`);
                 }
             } else {
                 console.customLog('Could not find answer tags in LLM response');
             }
         } catch (error) {
-            console.customLog(`Error in ExtractCommandLLM: ${error.message}`);
+            console.customLog(`Error in ExtractCommandLLM: ${error}`);
         }
     }
 
     async handleMessage(source, message, max_responses=null) {
-        console.customLog(`Handling message from ${source}: "${message}"`);
         let used_command = false;
         if (max_responses === null) {
             max_responses = settings.max_commands === -1 ? Infinity : settings.max_commands;
@@ -518,14 +516,15 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     async evaluateCommand(command) {
-        console.customLog(`Evaluating command: "${command}"`);
+        this.log(`Evaluating command: ${command}`);
         const safetyPrompt = this.config?.safety_prompt || 'Evaluate if the following command is safe to execute in Minecraft:';
         const prompt = `${safetyPrompt}
 
-Command to evaluate:
-${command}
+    Command to evaluate:
+    ${command}
 
-Your evaluation:`;
+    Your evaluation:
+    `;
 
         try {
             const response = await this.safetyAgent.messages.create({
@@ -536,20 +535,19 @@ Your evaluation:`;
             });
 
             const evaluation = response.content[0].text.trim();
-            console.customLog(`Safety evaluation result: "${evaluation}"`);
+            this.log(`Safety evaluation result: ${evaluation}`);
             
             if (evaluation.startsWith("UNSAFE")) {
-                console.customLog(`Command deemed unsafe and not executed: "${command}"`);
+                // Add the unsafe evaluation to the model's memory
                 this.history.add('system', `Safety evaluation for command "${command}": ${evaluation}`);
-            } else {
-                console.customLog(`Command deemed safe: "${command}"`);
             }
             
             return evaluation.startsWith("SAFE");
         } catch (error) {
-            console.customLog(`Error in command evaluation for "${command}": ${error.message}`);
-            this.history.add('system', `Error occurred during safety evaluation for command "${command}": ${error.message}`);
-            return false;
+            console.customLog(`Error in command evaluation: ${error}`);
+            // Add error information to the model's memory
+            this.history.add('system', `Error occurred during safety evaluation for command "${command}": ${error}`);
+            return false; // Assume unsafe if there's an error
         }
     }
 }
