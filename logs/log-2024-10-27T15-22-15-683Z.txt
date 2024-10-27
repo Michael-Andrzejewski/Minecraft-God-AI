@@ -1,0 +1,6 @@
+[2024-10-27T15-22-15-699Z] Logging in...
+[2024-10-27T15-22-16-298Z] Configuration loaded successfully:
+[2024-10-27T15-22-16-292Z] Error: connect ECONNREFUSED 127.0.0.1:55916
+[2024-10-27T15-22-15-700Z] Logging in...
+[2024-10-27T15-22-16-345Z] Error: connect ECONNREFUSED 127.0.0.1:55916
+[2024-10-27T15-22-16-349Z] Configuration loaded successfully:
