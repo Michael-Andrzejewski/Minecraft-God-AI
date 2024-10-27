@@ -6,8 +6,12 @@ export default
     "auth": "offline", // or "microsoft"
     
     "profiles": [
+        "./overseer.json",
+        "./agent_a.json",
+        "./agent_b.json",
+        "./agent_c.json",
         //"./god_admin.json",
-        "./city_maximizer.json",
+        //"./city_maximizer.json",
         //"./diamond_maximizer.json",
         //"./andy.json",
         //"./survivalist.json",

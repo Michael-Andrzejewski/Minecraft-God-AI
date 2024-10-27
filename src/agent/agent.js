@@ -471,9 +471,14 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     startContinueTimer() {
+        if (!this.prompter.profile.continue_prompt) {
+            return; // Don't start the timer if there's no continue prompt
+        }
+
         if (this.continueInterval) {
             clearInterval(this.continueInterval);
         }
+        
         this.continueInterval = setInterval(() => {
             if (this.continue_bool) {
                 this.handleContinueCommand();
@@ -489,8 +494,8 @@ Remember, only include commands that start with a '/' character, and ensure your
     }
 
     handleContinueCommand() {
-        if (this.isIdle()) {
-            this.handleMessage('system', 'Continue.');
+        if (this.isIdle() && this.prompter.profile.continue_prompt) {
+            this.handleMessage('system', this.prompter.profile.continue_prompt);
         }
     }
 
