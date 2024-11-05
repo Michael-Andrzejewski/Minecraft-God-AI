@@ -1,0 +1,8 @@
+[2024-10-27T17-30-09-859Z] Logging in...
+[2024-10-27T17-30-10-882Z] Configuration loaded successfully:
+[2024-10-27T17-30-12-603Z] Agent-A spawned.
+[2024-10-27T17-30-12-614Z] Awaiting anthropic api response...
+[2024-10-27T17-30-12-607Z] Executed command: /summon minecraft:lightning_bolt
+[2024-10-27T17-30-12-978Z] Purely conversational response: My brain disconnected, try again.
+[2024-10-27T17-30-12-975Z] Error: 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}
+[2024-10-27T17-30-13-073Z] Error in ExtractCommandLLM: Error: 401 {"type":"error","error":{"type":"authentication_error","message":"invalid x-api-key"}}
